@@ -21,6 +21,7 @@
 #include <vtkLightsPass.h>
 #include <vtkDefaultPass.h>
 #include <vtkRenderPassCollection.h>
+#include <vtkFramebufferPass.h>
 
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <boost\signals2.hpp>//O header da boost. Esse header precisa que sua lib seja inclusa.
@@ -59,7 +60,14 @@ public:
 	//Isso aqui é bem especifico do experimento, é pra tratar o keypress e fazer o switch
 	void operator() (MyRenderPassSwitchFramebuffer ev)
 	{
-		std::cout << "YO" << std::endl;
+		if (ev == FB_ON)
+		{
+
+		}
+		if (ev == FB_OFF)
+		{
+
+		}
 	}
 };
 
