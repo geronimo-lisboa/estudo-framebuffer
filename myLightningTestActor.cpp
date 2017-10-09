@@ -179,7 +179,7 @@ int myLightiningTestActor::RenderOpaqueGeometry(vtkViewport *view) {
 		else
 		{
 			vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();
-			t->DeepCopy(Transform);
+			t->DeepCopy(this->Transform);//A Transform tem a rotação, seja via RotateX e RotateWXYZ
 			t->Translate(this->GetPosition());
 			t->Update();
 			t->GetMatrix(modelMat);
