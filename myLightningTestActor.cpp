@@ -165,69 +165,57 @@ int myLightiningTestActor::RenderOpaqueGeometry(vtkViewport *view) {
 	{
 		SetUp();
 	}
-	else {
-		glFrontFace(GL_CW);
-		glDisable(GL_CULL_FACE);
-
-
-		GLenum err = GL_NO_ERROR;
-		//Montagem da matriz mvp e sua preparação pro shader
-		vtkRenderer* ren = vtkRenderer::SafeDownCast(view);
-		vtkSmartPointer<vtkMatrix4x4> modelMat = vtkSmartPointer<vtkMatrix4x4>::New();
-		if (IsIdentity)
-			modelMat->Identity();
-		else
-		{
-			vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();
-			t->DeepCopy(this->Transform);//A Transform tem a rotação, seja via RotateX e RotateWXYZ
-			t->Translate(this->GetPosition());
-			t->Update();
-			t->GetMatrix(modelMat);
-		}
-
-		vtkSmartPointer<vtkMatrix4x4> projMat = ren->GetActiveCamera()->GetProjectionTransformMatrix(ren);
-		vtkSmartPointer<vtkMatrix4x4> viewMat = ren->GetActiveCamera()->GetViewTransformMatrix();
-
-
-		std::array<float, 16> viewData = vtkMatrixToArray(viewMat);
-		std::array<float, 16> modelData = vtkMatrixToArray(modelMat);
-		std::array<float, 16> projData = vtkMatrixToArray(projMat);
-
-		glBindVertexArray(vao);//Começa a usar o vartex array
-		shader->UseProgram();//Começa a usar o shader
-		//Passa os atributos do vao, como ligados na construção do objeto.
-		GLuint positionLocation = shader->GetAttribute("position");
-		glBindAttribLocation(shader->GetProgramId(), positionLocation, "position");
-		GLuint textureCoordinateLocation = shader->GetAttribute("textureCoordinate");
-		glBindAttribLocation(shader->GetProgramId(), textureCoordinateLocation, "textureCoordinate");
-		GLuint normalLocation = shader->GetAttribute("normal");
-		glBindAttribLocation(shader->GetProgramId(), normalLocation, "normal");
-		//passa as matrizes
-		GLuint modelMatrixLocation = shader->GetUniform("modelMatrix");
-		glUniformMatrix4fv(modelMatrixLocation, 1, true, modelData.data());
-		GLuint viewMatrixLocation = shader->GetUniform("viewMatrix");
-		glUniformMatrix4fv(viewMatrixLocation, 1, true, viewData.data());
-		GLuint projectionMatrixLocation = shader->GetUniform("projectionMatrix");
-		glUniformMatrix4fv(projectionMatrixLocation, 1, true, projData.data());
-		//passa a luz
-		vtkLight* aLight = vtkLight::SafeDownCast( ren->GetLights()->GetItemAsObject(0) );
-		array<float, 3>lightPos = { { aLight->GetPosition()[0], aLight->GetPosition()[1], aLight->GetPosition()[2] } };
-		GLuint lightPositionLocation = shader->GetUniform("lightPosition");
-		glUniform3fv(lightPositionLocation, 1, lightPos.data());
-		//Passa as texturas.
-		glActiveTexture(GL_TEXTURE0);
-		GLuint textureLocation = shader->GetUniform("texUnit");
-		glUniform1i(textureLocation, /*GL_TEXTURE*/0);
-		glBindTexture(GL_TEXTURE_2D, textureId);
-
-		glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
-
-		err = glGetError();
-		if (err != GL_NO_ERROR)
-			BOOST_THROW_EXCEPTION(OpenGLException(err));
-
-		//FIM EXPERIMENTO
+	glFrontFace(GL_CW);
+	glDisable(GL_CULL_FACE);
+	GLenum err = GL_NO_ERROR;
+	//Montagem da matriz mvp e sua preparação pro shader
+	vtkRenderer* ren = vtkRenderer::SafeDownCast(view);
+	vtkSmartPointer<vtkMatrix4x4> modelMat = vtkSmartPointer<vtkMatrix4x4>::New();
+	if (IsIdentity)
+		modelMat->Identity();
+	else
+	{
+		vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();
+		t->DeepCopy(this->Transform);//A Transform tem a rotação, seja via RotateX e RotateWXYZ
+		t->Translate(this->GetPosition());
+		t->Update();
+		t->GetMatrix(modelMat);
 	}
+	vtkSmartPointer<vtkMatrix4x4> projMat = ren->GetActiveCamera()->GetProjectionTransformMatrix(ren);
+	vtkSmartPointer<vtkMatrix4x4> viewMat = ren->GetActiveCamera()->GetViewTransformMatrix();
+	std::array<float, 16> viewData = vtkMatrixToArray(viewMat);
+	std::array<float, 16> modelData = vtkMatrixToArray(modelMat);
+	std::array<float, 16> projData = vtkMatrixToArray(projMat);
+	glBindVertexArray(vao);//Começa a usar o vartex array
+	shader->UseProgram();//Começa a usar o shader
+	//Passa os atributos do vao, como ligados na construção do objeto.
+	GLuint positionLocation = shader->GetAttribute("position");
+	glBindAttribLocation(shader->GetProgramId(), positionLocation, "position");
+	GLuint textureCoordinateLocation = shader->GetAttribute("textureCoordinate");
+	glBindAttribLocation(shader->GetProgramId(), textureCoordinateLocation, "textureCoordinate");
+	GLuint normalLocation = shader->GetAttribute("normal");
+	glBindAttribLocation(shader->GetProgramId(), normalLocation, "normal");
+	//passa as matrizes
+	GLuint modelMatrixLocation = shader->GetUniform("modelMatrix");
+	glUniformMatrix4fv(modelMatrixLocation, 1, true, modelData.data());
+	GLuint viewMatrixLocation = shader->GetUniform("viewMatrix");
+	glUniformMatrix4fv(viewMatrixLocation, 1, true, viewData.data());
+	GLuint projectionMatrixLocation = shader->GetUniform("projectionMatrix");
+	glUniformMatrix4fv(projectionMatrixLocation, 1, true, projData.data());
+	//passa a luz
+	vtkLight* aLight = vtkLight::SafeDownCast( ren->GetLights()->GetItemAsObject(0) );
+	array<float, 3>lightPos = { { aLight->GetPosition()[0], aLight->GetPosition()[1], aLight->GetPosition()[2] } };
+	GLuint lightPositionLocation = shader->GetUniform("lightPosition");
+	glUniform3fv(lightPositionLocation, 1, lightPos.data());
+	//Passa as texturas.
+	glActiveTexture(GL_TEXTURE0);
+	GLuint textureLocation = shader->GetUniform("texUnit");
+	glUniform1i(textureLocation, /*GL_TEXTURE*/0);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+	glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
+	err = glGetError();
+	if (err != GL_NO_ERROR)
+		BOOST_THROW_EXCEPTION(OpenGLException(err));
 	return 1;
 }
 
