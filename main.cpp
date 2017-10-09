@@ -21,9 +21,6 @@
 #include <vtkLightsPass.h>
 #include <vtkDefaultPass.h>
 #include <vtkRenderPassCollection.h>
-#include <vtkFramebufferPass.h>
-
-#include <vtkFramebufferPass.h>
 #include <vtkTextureObject.h>
 #include <vtkPixelBufferObject.h>
 
@@ -47,39 +44,23 @@ private:
 	vtkSmartPointer<vtkDefaultPass> defaultPass;
 	vtkSmartPointer<vtkRenderPassCollection> passes;
 	vtkSmartPointer<vtkSequencePass> sequencePass;
-	//O framebuffer pass, como o camera pass, tem o SetDelegate, que é passar pra ele quais renderpasses
-	//farão as coisas para ele.
-	vtkSmartPointer<vtkFramebufferPass> framebufferPass;
 	MyRenderPass(){
 		sequencePass = vtkSmartPointer<vtkSequencePass>::New();
 		lightsPass = vtkSmartPointer<vtkLightsPass>::New();
 		defaultPass = vtkSmartPointer<vtkDefaultPass>::New();
 		passes = vtkSmartPointer<vtkRenderPassCollection>::New();
 		cameraPass = vtkSmartPointer<vtkCameraPass>::New();
-		framebufferPass = vtkSmartPointer<vtkFramebufferPass>::New();
 		passes->AddItem(lightsPass);
 		passes->AddItem(defaultPass);
 		sequencePass->SetPasses(passes);
 		cameraPass->SetDelegatePass(sequencePass);
-		//O framebuffer pass vai receber todos os passes;
-		framebufferPass->SetDelegatePass(cameraPass);
+
 	}
 
 public:
 	static MyRenderPass* New();
 	void Render(const vtkRenderState *s){
 		cameraPass->Render(s);//Renderização para a tela
-		framebufferPass->Render(s);//Renderização para o framebuffer
-		vtkTextureObject* colorBuffer = framebufferPass->GetDepthTexture();
-		vtkPixelBufferObject* pbo = colorBuffer->Download();
-		unsigned int dims[] = { 600,600 };
-		vtkIdType increments[] = { 1, 600 };
-		unsigned char *data = new unsigned char[600 * 600 * 4];
-		pbo->Download2D(vtkPixelBufferObject::PACKED_BUFFER, data, dims, 4, increments);
-		vtkSmartPointer<vtkImageImport> import = vtkSmartPointer<vtkImageImport>::New();
-		import->SetDataOrigin(0, 0, 0);
-		import->SetDataSpacing(1, 1, 1);
-		//pbo->Print(std::cout);
 
 	}
 
@@ -127,7 +108,7 @@ int main(int argc, char **argv){
 	try{
 		vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
 		vtkSmartPointer<MyRenderPass> myRendering = vtkSmartPointer<MyRenderPass>::New();
-		vtkOpenGLRenderer::SafeDownCast(renderer)->SetPass(myRendering);
+		//vtkOpenGLRenderer::SafeDownCast(renderer)->SetPass(myRendering);
 		vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
 		vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
 
@@ -150,7 +131,7 @@ int main(int argc, char **argv){
 		renderer->SetBackground(0.5, 0, 0);
 		renderer->AddActor(mapperMassinha);
 		renderer->AddActor(mapperPlano);
-		renderWindow->SetSize(600, 600);
+		renderWindow->SetSize(200, 200);
 		renderer->ResetCamera();
 
 		vtkCamera *cam = renderer->GetActiveCamera();
